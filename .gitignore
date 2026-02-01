@@ -18,6 +18,9 @@ Thumbs.db
 *.log
 *.bsp
 scripts/__pycache__/
+test-install/
+*.tgz
+.npmrc
 
 # 临时生成的基准数据
 test_report.*
