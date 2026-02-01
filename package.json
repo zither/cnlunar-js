@@ -1,6 +1,6 @@
 {
   "name": "cnlunar-js",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A JavaScript port of the cnlunar Python library.",
   "type": "module",
   "main": "src/index.js",
@@ -8,7 +8,7 @@
     ".": "./src/index.js"
   },
   "engines": {
-    "node": ">=14.0.0" 
+    "node": ">=14.0.0"
   },
   "scripts": {
     "test": "node tests/comprehensive.test.js",
@@ -41,7 +41,7 @@
   },
   "homepage": "https://github.com/zither/cnlunar-js#readme",
   "files": [
-    "src", 
+    "src",
     "LICENSE",
     "README.md"
   ]
