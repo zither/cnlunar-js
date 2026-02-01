@@ -546,13 +546,25 @@ export class Lunar {
         }
 
         // 2. 特殊节气规则
+        /* 
+           插入卷十一拆解后遗留内容
+           节气间差类
+           [("小寒", 0), ("大寒", 1), ("立春", 2), ("雨水", 3), ("惊蛰", 4), ("春分", 5), ("清明", 6), ("谷雨", 7), ("立夏", 8), ("小满", 9), ("芒种", 10), ("夏至", 11), ("小暑", 12), ("大暑", 13), ("立秋", 14), ("处暑", 15), ("白露", 16), ("秋分", 17), ("寒露", 18), ("霜降", 19), ("立冬", 20), ("小雪", 21), ("大雪", 22), ("冬至", 23)]
+        */
+
+        //# 雨水后立夏前执日、危日、收日 宜 取鱼 
         if (this.nextSolarNum >= 4 && this.nextSolarNum <= 8 && ['执', '危', '收'].includes(o)) gbDic.goodThing = rfAdd(gbDic.goodThing, ['取鱼']);
+        //# 霜降后立春前执日、危日、收日 宜 畋猎
         if ((this.nextSolarNum >= 20 || this.nextSolarNum <= 2) && ['执', '危', '收'].includes(o)) gbDic.goodThing = rfAdd(gbDic.goodThing, ['畋猎']);
-        if ((this.nextSolarNum >= 21 || this.nextSolarNum <= 2) && (o === '危' || d === '午' || d === '申')) {
-            gbDic['goodThing'] = rfAdd(gbDic['goodThing'], ['伐木']);
+        //# 立冬后立春前危日 午日 申日 宜 伐木
+        if ((this.nextSolarNum >= 21 || this.nextSolarNum <= 2) && (o === '危' || ['午', '申'].includes(d))) {
+            gbDic.goodThing = rfAdd(gbDic.goodThing, ['伐木']);
         }
+        //#   每月一日 六日 十五 十九日 二十一日 二十三日 忌 整手足甲
         if ([1, 6, 15, 19, 21, 23].includes(ldn)) gbDic.badThing = rfAdd(gbDic.badThing, ['整手足甲']);
+        //# 每月十二日 十五日 忌 整容剃头
         if ([12, 15].includes(ldn)) gbDic.badThing = rfAdd(gbDic.badThing, ['整容', '剃头']);
+        //# 每月十五日 朔弦望月 忌 求医疗病
         if (ldn === 15 || this.phaseOfMoon !== '') gbDic.badThing = rfAdd(gbDic.badThing, ['求医疗病']);
 
         // 3. 神煞列表 [名称, 匹配源, 匹配目标范围, 宜, 忌]
@@ -767,18 +779,25 @@ export class Lunar {
         processDB(demon, 'badName');
 
         // 5. 过滤逻辑 (严格对齐 Python badDrewGood/badOppressGood 等)
+
+        //# 第一方案：《钦定协纪辨方书》古书影印版，宜忌等第表
+        //# 凡铺注《万年历》、《通书》，先依用事次第察其所宜忌之日，于某日下注宜某事，某日下注忌某事，次按宜忌，较量其凶吉之轻重，以定去取。
         const thingLevel = this.getTodayThingLevel(gbDic.goodName, gbDic.badName, o);
         if (thingLevel === 3) {
+            //# 诸事不宜
             gbDic.goodThing = ['诸事不宜'];
             gbDic.badThing = ['诸事不宜'];
         } else if (thingLevel === 2) {
+            //# 从忌不从宜
             const inter = gbDic.goodThing.filter(x => gbDic.badThing.includes(x));
             gbDic.goodThing = rfRemove(gbDic.goodThing, inter);
         } else if (thingLevel === 1) {
+            //# 从忌亦从宜
             const inter = gbDic.goodThing.filter(x => gbDic.badThing.includes(x));
             gbDic.goodThing = rfRemove(gbDic.goodThing, inter);
             gbDic.badThing = rfRemove(gbDic.badThing, inter);
         } else {
+            //# 从宜不从忌
             const inter = gbDic.badThing.filter(x => gbDic.goodThing.includes(x));
             gbDic.badThing = rfRemove(gbDic.badThing, inter);
         }
@@ -797,65 +816,93 @@ export class Lunar {
         }
 
         if (thingLevel !== 3) {
+            //# 凡宜宣政事，布政事之日，只注宜宣政事。
             if (this.goodThing.includes('宣政事') && this.goodThing.includes('布政事')) this.goodThing = rfRemove(this.goodThing, ['布政事']);
+            //# 凡宜营建宫室、修宫室之日，只注宜营建宫室。
             if (this.goodThing.includes('营建宫室') && this.goodThing.includes('修宫室')) this.goodThing = rfRemove(this.goodThing, ['修宫室']);
+            //# 凡德合、赦愿、月恩、四相、时德等日，不注忌进人口、安床、经络、酝酿、开市、立券、交易、纳财、开仓库、出货财。如遇德犹忌，及从忌不从宜之日，则仍注忌。
             const isDeSheEnSixiang = ['岁德合', '月德合', '天德合', '天赦', '天愿', '月恩', '四相', '时德'].some(g => gbDic.goodName.includes(g));
             if (isDeSheEnSixiang && thingLevel !== 2) {
                 this.badThing = rfRemove(this.badThing, ['进人口', '安床', '经络', '酝酿', '开市', '立券交易', '纳财', '开仓库', '出货财']);
                 this.badThing = rfAdd(this.badThing, deIsBadThing);
             }
+            //# 凡天狗寅日忌祭祀，不注宜求福、祈嗣。
             if (gbDic.badName.includes('天狗') || d.includes('寅')) {
                 this.badThing = rfAdd(this.badThing, ['祭祀']);
                 this.goodThing = rfRemove(this.goodThing, ['祭祀', '求福', '祈嗣']);
             }
 
-            if ((this.nextSolarNum >= 21 || this.nextSolarNum <= 2) && (o === '危' || ['午', '申'].includes(d))) {
-                this.goodThing = rfAdd(this.goodThing, ['伐木']);
-            }
-
+            //# 凡卯日忌穿井，不注宜开渠。壬日忌开渠，不注宜穿井。
             if (d.includes('卯')) { this.badThing = rfAdd(this.badThing, ['穿井']); this.goodThing = rfRemove(this.goodThing, ['穿井', '开渠']); }
             if (d.includes('壬')) { this.badThing = rfAdd(this.badThing, ['开渠']); this.goodThing = rfRemove(this.goodThing, ['开渠', '穿井']); }
+            //# 凡巳日忌出行，不注宜出师、遣使。
             if (d.includes('巳')) { this.badThing = rfAdd(this.badThing, ['出行']); this.goodThing = rfRemove(this.goodThing, ['出行', '出师', '遣使']); }
+            //# 凡酉日忌宴会，亦不注宜庆赐、赏贺。
             if (d.includes('酉')) { this.badThing = rfAdd(this.badThing, ['宴会']); this.goodThing = rfRemove(this.goodThing, ['宴会', '庆赐', '赏贺']); }
+            //# 凡丁日忌剃头，亦不注宜整容。
             if (d.includes('丁')) { this.badThing = rfAdd(this.badThing, ['剃头']); this.goodThing = rfRemove(this.goodThing, ['剃头', '整容']); }
+            //# 凡吉足胜凶，从宜不从忌者，如遇德犹忌之事，则仍注忌。
             if (this.todayLevel === 0 && thingLevel === 0) this.badThing = rfAdd(this.badThing, deIsBadThing);
+            //# 凡吉凶相抵，不注宜亦不注忌者，如遇德犹忌之事，则仍注忌。
             if (this.todayLevel === 1) {
                 this.badThing = rfAdd(this.badThing, deIsBadThing);
+                //# 凡吉凶相抵，不注忌祈福，亦不注忌求嗣。
                 if (!this.badThing.includes('祈福')) this.badThing = rfRemove(this.badThing, ['求嗣']);
+                //# 凡吉凶相抵，不注忌结婚姻，亦不注忌冠带、纳采问名、嫁娶、进人口，如遇德犹忌之日则仍注忌。
                 if (!this.badThing.includes('结婚姻') && !this.isDe) this.badThing = rfRemove(this.badThing, ['冠带', '纳采问名', '嫁娶', '进人口']);
+                //# 凡吉凶相抵，不注忌嫁娶，亦不注忌冠带、结婚姻、纳采问名、进人口、搬移、安床，如遇德犹忌之日，则仍注忌。
                 if (!this.badThing.includes('嫁娶') && !this.isDe) {
                     if (!gbDic.goodName.includes('不将')) this.badThing = rfRemove(this.badThing, ['冠带', '纳采问名', '结婚姻', '进人口', '搬移', '安床']);
                 }
             }
+            //# 遇亥日、厌对、八专、四忌、四穷而仍注忌嫁娶者，只注所忌之事，其不忌者仍不注忌。【未妥善解决】
             if (d.includes('亥')) this.badThing = rfAdd(this.badThing, ['嫁娶']);
+            //# 凡吉凶相抵，不注忌搬移，亦不注忌安床。不注忌安床，亦不注忌搬移。如遇德犹忌之日，则仍注忌。
             if (this.todayLevel === 1 && !this.isDe) {
                 if (!this.badThing.includes('搬移')) this.badThing = rfRemove(this.badThing, ['安床']);
                 if (!this.badThing.includes('安床')) this.badThing = rfRemove(this.badThing, ['搬移']);
+                //# 凡吉凶相抵，不注忌解除，亦不注忌整容、剃头、整手足甲。如遇德犹忌之日，则仍注忌。
                 if (!this.badThing.includes('解除')) this.badThing = rfRemove(this.badThing, ['整容', '剃头', '整手足甲']);
+                //# 凡吉凶相抵，不注忌修造动土、竖柱上梁，亦不注忌修宫室、缮城郭、筑提防、修仓库、鼓铸、苫盖、修置产室、开渠穿井、安碓硙、补垣塞穴、修饰垣墙、平治道涂、破屋坏垣。如遇德犹忌之日，则仍注忌。
                 if (!this.badThing.includes('修造') || !this.badThing.includes('竖柱上梁')) {
                     this.badThing = rfRemove(this.badThing, ['修宫室', '缮城郭', '整手足甲', '筑提', '修仓库', '鼓铸', '苫盖', '修置产室', '开渠穿井', '安碓硙', '补垣塞穴', '修饰垣墙', '平治道涂', '破屋坏垣']);
                 }
             }
             if (this.todayLevel === 1) {
+                //# 凡吉凶相抵，不注忌开市，亦不注忌立券交易、纳财。不注忌纳财，亦不注忌开市、立券交易。不注忌立券交易，亦不注忌开市、纳财。
+                //# 凡吉凶相抵，不注忌开市、立券交易，亦不注忌开仓库、出货财。
                 if (!this.badThing.includes('开市')) this.badThing = rfRemove(this.badThing, ['立券交易', '纳财', '开仓库', '出货财']);
                 if (!this.badThing.includes('纳财')) this.badThing = rfRemove(this.badThing, ['立券交易', '开市']);
                 if (!this.badThing.includes('立券交易')) this.badThing = rfRemove(this.badThing, ['纳财', '开市', '开仓库', '出货财']);
+                //# 如遇专忌之日，则仍注忌。【未妥善解决】
+                //# 凡吉凶相抵，不注忌牧养，亦不注忌纳畜。不注忌纳畜，亦不注忌牧养。
                 if (!this.badThing.includes('牧养')) this.badThing = rfRemove(this.badThing, ['纳畜']);
                 if (!this.badThing.includes('纳畜')) this.badThing = rfRemove(this.badThing, ['牧养']);
+                 //# 凡吉凶相抵，有宜安葬不注忌启攒，有宜启攒不注忌安葬。
                 if (this.goodThing.includes('安葬')) this.badThing = rfRemove(this.badThing, ['启攒']);
                 if (this.goodThing.includes('启攒')) this.badThing = rfRemove(this.badThing, ['安葬']);
             }
+            //# 凡忌诏命公卿、招贤，不注宜施恩、封拜、举正直、袭爵受封。    #本版本无 封拜 袭爵受封
             if (this.badThing.includes('诏命公卿') || this.badThing.includes('招贤')) this.goodThing = rfRemove(this.goodThing, ['施恩', '举正直']);
+            //# 凡忌施恩、封拜、举正直、袭爵受封，亦不注宜诏命公卿、招贤。
             if (this.badThing.includes('施恩') || this.badThing.includes('举正直')) this.goodThing = rfRemove(this.goodThing, ['诏命公卿', '招贤']);
+            //# 凡宜宣政事之日遇往亡则改宣为布。
             if (this.goodThing.includes('宣政事') && gbDic.badName.includes('往亡')) { this.goodThing = rfRemove(this.goodThing, ['宣政事']); this.goodThing = rfAdd(this.goodThing, ['布政事']); }
+            // # 凡月厌忌行幸、上官，不注宜颁诏、施恩封拜、诏命公卿、招贤、举正直。遇宜宣政事之日，则改宣为布。
             if (gbDic.badName.includes('月厌')) {
                 this.goodThing = rfRemove(this.goodThing, ['颁诏', '施恩', '招贤', '举正直', '宣政事']); this.goodThing = rfAdd(this.goodThing, ['布政事']);
                 this.badThing = rfAdd(this.badThing, ['补垣']);
                 if (['土府', '土符', '地囊'].some(val => gbDic.badName.includes(val))) this.goodThing = rfRemove(this.goodThing, ['塞穴']);
             }
+             //# 凡开日，不注宜破土、安葬、启攒，亦不注忌。遇忌则注。
             if (o.includes('开')) this.goodThing = rfRemove(this.goodThing, ['破土', '安葬', '启攒']);
+            //# 凡四忌、四穷只忌安葬。如遇鸣吠、鸣吠对亦不注宜破土、启攒。
             if (gbDic.badName.includes('四忌') || gbDic.badName.includes('四穷')) { this.badThing = rfAdd(this.badThing, ['安葬']); this.goodThing = rfRemove(this.goodThing, ['破土', '启攒']); }
             if (gbDic.goodName.includes('鸣吠') || gbDic.goodName.includes('鸣吠对')) this.goodThing = rfRemove(this.goodThing, ['破土', '启攒']);
+
+            //# 凡天吏、大时不以死败论者，遇四废、岁薄、逐阵仍以死败论。
+            //# 凡岁薄、逐阵日所宜事，照月厌所忌删，所忌仍从本日。、
+            //# 二月甲戌、四月丙申、六月甲子、七月戊申、八月庚辰、九月辛卯、十月甲子、十二月甲子，德和与赦、愿所汇之辰，诸事不忌。
             const deHeDayList = ['空', '甲戌', '空', '丙申', '空', '甲子', '戊申', '庚辰', '辛卯', '甲子', '空', '甲子'];
             if (deHeDayList[lmn - 1] === d) { // 此处 d 为 2 字全柱字符串，OK
                 this.badThing = ['诸事不忌'];
@@ -864,6 +911,7 @@ export class Lunar {
         }
 
         // 7. 最终清理
+        //# 书中未明注忌不注宜
         let rmFinal = this.badThing.filter(thing => this.goodThing.includes(thing));
         if (!(rmFinal.length === 1 && rmFinal[0].includes('诸事'))) this.goodThing = rfRemove(this.goodThing, rmFinal);
         if (this.badThing.length === 0) this.badThing = ['诸事不忌'];
