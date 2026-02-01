@@ -1,0 +1,22 @@
+# 忽略开发工具和脚本
+scripts/
+test/
+tests/
+dump.sh
+run_full_test.sh
+
+# 忽略 Git 配置
+.gitignore
+.gitattributes
+
+# 忽略 IDE 配置
+.vscode/
+.idea/
+.git/
+
+# 忽略测试报告和临时文件
+*.log
+*.html
+*.bsp
+full_benchmark.json
+test_report.json

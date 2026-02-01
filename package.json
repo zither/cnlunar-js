@@ -1,0 +1,41 @@
+{
+  "name": "cnlunar-js",
+  "version": "0.1.0",
+  "description": "A JavaScript port of the cnlunar Python library. ",
+  "type": "module", 
+  "main": "src/index.js", 
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node tests/comprehensive.test.js",
+    "test:gen": "python3 scripts/generate_full_test.py",
+    "compare": "node scripts/compare_single.js",
+    "full-check": "bash scripts/run_full_test.sh"
+  },
+  "keywords": [
+    "lunar",
+    "calendar",
+    "chinese",
+    "solar-term",
+    "bazi",
+    "eight-characters"
+  ],
+  "author": "Zither <ilorn.mc@gmail.com> (https://github.com/zither)",
+  "contributors": [
+    {
+      "name": "OPN48",
+      "url": "https://github.com/OPN48"
+    }
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zither/cnlunar-js.git"
+  },
+  "files": [
+    "src",
+    "LICENSE",
+    "README.md"
+  ]
+}
