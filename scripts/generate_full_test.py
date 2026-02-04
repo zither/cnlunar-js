@@ -24,6 +24,8 @@ def serialize_lunar(lunar_obj, dt):
             "day_cn": lunar_obj.lunarDayCn,
             "week_day": lunar_obj.weekDayCn,
             "season": lunar_obj.lunarSeason,
+            "season_name": lunar_obj.lunarSeasonName,
+            "month_type": lunar_obj.lunarMonthType,
             "zodiac_year": lunar_obj.chineseYearZodiac
         },
         "bazi": {

@@ -24,9 +24,10 @@ import { getTheYearAllSolarTermsList } from './utils/solar24.js';
 import { rfAdd, rfRemove, sortCollation } from './utils/tools.js';
 
 export class Lunar {
-    constructor(date = new Date(), godType = '8char', year8Char = 'year') {
+    constructor(date = new Date(), godType = '8char', year8Char = 'year', yeargod='duty') {
         this.godType = godType;
         this.year8CharOption = year8Char;
+        this.isYeargodDuty = yeargod === 'duty' ? true : false;
         this.date = date;
         this.twohourNum = Math.floor((this.date.getHours() + 1) / 2);
         this.isLunarLeapMonth = false;
@@ -278,9 +279,11 @@ export class Lunar {
         this.monthHeavenNum = the10HeavenlyStems.indexOf(this.month8Char[0]);
         this.dayHeavenNum = the10HeavenlyStems.indexOf(this.day8Char[0]);
 
-        this.seasonType = this.monthEarthNum % 3;
-        this.seasonNum = Math.floor(this.mod(this.monthEarthNum - 2, 12) / 3);
-        this.lunarSeason = '仲季孟'[this.seasonType] + '春夏秋冬'[this.seasonNum];
+        this.lunarMonthNum = this.monthEarthNum % 3;
+        this.lunarSeasonNum = Math.floor(this.mod(this.monthEarthNum - 2, 12) / 3);
+        this.lunarMonthType = '仲季孟'[this.lunarMonthNum];
+        this.lunarSeason= '春夏秋冬'[this.lunarSeasonNum];
+        this.lunarSeasonName = this.lunarMonthType + this.lunarSeason;
     }
 
     get_twohour8CharList() {
@@ -510,7 +513,7 @@ export class Lunar {
         };
 
         const s = this.today28Star, o = this.today12DayOfficer, d = this.day8Char;
-        const den = this.dayEarthNum, sn = this.seasonNum, yhn = this.yearHeavenNum;
+        const den = this.dayEarthNum, sn = this.lunarSeasonNum, yhn = this.yearHeavenNum;
         const yen = this.yearEarthNum, ldn = this.lunarDay, lmn = this.lunarMonth;
 
         const tomorrow = new Date(this.date);
@@ -570,11 +573,19 @@ export class Lunar {
         // 3. 神煞列表 [名称, 匹配源, 匹配目标范围, 宜, 忌]
         // 逻辑：如果 匹配源 在 匹配目标范围 中，则命中。
         const angel = [
-            ['岁德', '甲庚丙壬戊甲庚丙壬戊'[yhn], d, ['修造', '嫁娶', '纳采', '搬移', '入宅'], []],
-            ['岁德合', '己乙辛丁癸己乙辛丁癸'[yhn], d, ['修造', '赴任', '嫁娶', '纳采', '搬移', '入宅', '出行'], []],
+            ['岁德', '甲庚丙壬戊甲庚丙壬戊'[yhn], d, ['修造'], []],
+            ['岁德合', '己乙辛丁癸己乙辛丁癸'[yhn], d, ['修造'], []],
             ['月德', '壬庚丙甲壬庚丙甲壬庚丙甲'[men], d[0], ['祭祀', '祈福', '求嗣', '上册', '上表章', '颁诏', '覃恩', '施恩', '招贤', '举正直', '恤孤茕', '宣政事', '雪冤', '庆赐', '宴会', '出行', '安抚边境', '选将', '出师', '上官', '临政', '结婚姻', '纳采', '嫁娶', '搬移', '解除', '求医疗病', '裁制', '营建', '缮城郭', '修造', '竖柱上梁', '修仓库', '栽种', '牧养', '纳畜', '安葬'], ['畋猎', '取鱼']],
             ['月德合', '丁乙辛己丁乙辛己丁乙辛己'[men], d[0], ['祭祀', '祈福', '求嗣', '上册', '上表章', '颁诏', '覃恩', '施恩', '招贤', '举正直', '恤孤茕', '宣政事', '雪冤', '庆赐', '宴会', '出行', '安抚边境', '选将', '出师', '上官', '临政', '结婚姻', '纳采', '嫁娶', '搬移', '解除', '求医疗病', '裁制', '营建', '缮城郭', '修造', '竖柱上梁', '修仓库', '栽种', '牧养', '纳畜', '安葬'], ['畋猎', '取鱼']],
-            ['天德', '巳庚丁申壬辛亥甲癸寅丙乙'[men], d, ['祭祀', '祈福', '求嗣', '上册', '上表章', '颁诏', '覃恩', '施恩', '招贤', '举正直', '恤孤茕', '宣政事', '雪冤', '庆赐', '宴会', '出行', '安抚边境', '选将', '出师', '上官', '临政', '结婚姻', '纳采', '嫁娶', '搬移', '解除', '求医疗病', '裁制', '营建', '缮城郭', '修造', '竖柱上梁', '修仓库', '栽种', '牧养', '纳畜', '安葬'], ['畋猎', '取鱼']],
+            // 正丁三壬四辛同，五亥六甲七癸逢；八寅九丙十居乙，子巳丑庚卯申中；戊巳绝无天德位，四仲四维不用墓。
+            // 坤宫（申未）、乾宫（亥戌）、艮宫（寅丑）、巽宫（巳辰）
+            // 巳	庚	丁	申	壬	辛	亥	甲	癸	寅	丙	乙
+            // the10HeavenlyStems = ('甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸')
+            // the12EarthlyBranches = ('子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥')
+            // 地地 天 天 地地 天 天 地地 天 天 地地 天 天
+            // 2026-01-26 01:30:00  季  乙巳 己丑 庚子 丁丑
+            //['天德', '巳庚丁申壬辛亥甲癸寅丙乙'[men], d, ['祭祀', '祈福', '求嗣', '上册', '上表章', '颁诏', '覃恩', '施恩', '招贤', '举正直', '恤孤茕', '宣政事', '雪冤', '庆赐', '宴会', '出行', '安抚边境', '选将', '出师', '上官', '临政', '结婚姻', '纳采', '嫁娶', '搬移', '解除', '求医疗病', '裁制', '营建', '缮城郭', '修造', '竖柱上梁', '修仓库', '栽种', '牧养', '纳畜', '安葬'], ['畋猎', '取鱼']],
+            ['天德', this.lunarMonthType == '仲' ? d[1] : d[0], ['巳辰','庚','丁','申未','壬','辛','亥戌','甲','癸','寅丑','丙','乙'][men], ['祭祀', '祈福', '求嗣', '上册', '上表章', '颁诏', '覃恩', '施恩', '招贤', '举正直', '恤孤茕', '宣政事', '雪冤', '庆赐', '宴会', '出行', '安抚边境', '选将', '出师', '上官', '临政', '结婚姻', '纳采', '嫁娶', '搬移', '解除', '求医疗病', '裁制', '营建', '缮城郭', '修造', '竖柱上梁', '修仓库', '栽种', '牧养', '纳畜', '安葬'], ['畋猎', '取鱼']],
             ['天德合', '空乙壬空丁丙空己戊空辛庚'[men], d, ['祭祀', '祈福', '求嗣', '上册', '上表章', '颁诏', '覃恩', '施恩', '招贤', '举正直', '恤孤茕', '宣政事', '雪冤', '庆赐', '宴会', '出行', '安抚边境', '选将', '出师', '上官', '临政', '结婚姻', '纳采', '嫁娶', '搬移', '解除', '求医疗病', '裁制', '营建', '缮城郭', '修造', '竖柱上梁', '修仓库', '栽种', '牧养', '纳畜', '安葬'], ['畋猎', '取鱼']],
             ['凤凰日', s[0], ['危', '昴', '胃', '毕'][sn], ['嫁娶'], []],
             ['麒麟日', s[0], ['井', '尾', '牛', '壁'][sn], ['嫁娶'], []],
@@ -767,6 +778,11 @@ export class Lunar {
                     matched = source === target;
                 }
 
+                // 岁神
+                if (!this.isYeargodDuty && name[0] === '岁') {
+                    matched =false; 
+                }
+
                 if (matched) {
                     gbDic[listKey].push(name);
                     gbDic.goodThing = rfAdd(gbDic.goodThing, good);
@@ -821,7 +837,11 @@ export class Lunar {
             //# 凡宜营建宫室、修宫室之日，只注宜营建宫室。
             if (this.goodThing.includes('营建宫室') && this.goodThing.includes('修宫室')) this.goodThing = rfRemove(this.goodThing, ['修宫室']);
             //# 凡德合、赦愿、月恩、四相、时德等日，不注忌进人口、安床、经络、酝酿、开市、立券、交易、纳财、开仓库、出货财。如遇德犹忌，及从忌不从宜之日，则仍注忌。
-            const isDeSheEnSixiang = ['岁德合', '月德合', '天德合', '天赦', '天愿', '月恩', '四相', '时德'].some(g => gbDic.goodName.includes(g));
+            let _maxPowerGodList = ['月德合', '天德合', '天赦', '天愿', '月恩', '四相', '时德'];
+            if (this.isYeargodDuty) {
+                _maxPowerGodList.unshift('岁德合');
+            }
+            const isDeSheEnSixiang = _maxPowerGodList.some(g => gbDic.goodName.includes(g));
             if (isDeSheEnSixiang && thingLevel !== 2) {
                 this.badThing = rfRemove(this.badThing, ['进人口', '安床', '经络', '酝酿', '开市', '立券交易', '纳财', '开仓库', '出货财']);
                 this.badThing = rfAdd(this.badThing, deIsBadThing);

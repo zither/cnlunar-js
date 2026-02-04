@@ -87,7 +87,7 @@ class ComprehensiveTester {
         const date = new Date(y, m - 1, d, h, min);
         
         try {
-            const lunar = new Lunar(date, '8char');
+            const lunar = new Lunar(date, '8char', 'noduty');
             // 确保懒加载属性被计算
             lunar.get_AngelDemon(); 
             
@@ -145,6 +145,8 @@ class ComprehensiveTester {
         if (lunar.lunarDayCn !== l.day_cn) errors.push(`day_cn: ${lunar.lunarDayCn} != ${l.day_cn}`);
         if (lunar.weekDayCn !== l.week_day) errors.push(`week: ${lunar.weekDayCn} != ${l.week_day}`);
         if (lunar.lunarSeason !== l.season) errors.push(`season: ${lunar.lunarSeason} != ${l.season}`);
+        if (lunar.lunarSeasonName !== l.season_name) errors.push(`season: ${lunar.lunarSeasonName} != ${l.season_name}`);
+        if (lunar.lunarMonthType !== l.month_type) errors.push(`season: ${lunar.lunarMonthType} != ${l.month_type}`);
         if (lunar.chineseYearZodiac !== l.zodiac_year) errors.push(`zodiac: ${lunar.chineseYearZodiac} != ${l.zodiac_year}`);
         return { success: errors.length === 0, errors };
     }

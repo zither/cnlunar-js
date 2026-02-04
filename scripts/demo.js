@@ -10,7 +10,7 @@ console.log('八字月柱与八字日柱算神煞版本\n');
 
 // 测试用例 1：常规算法
 console.log('1. 常规算法 demo 应输出 壬寅');
-let a = new Lunar(new Date(2026, 0, 29, 1, 30), { godType: '8char' });
+let a = new Lunar(new Date(2026, 3, 9, 12, 30), { godType: '8char', yeargod: 'noduty'});
 printLunarInfo(a);
 
 // 测试用例 2：八字立春切换算法
@@ -47,7 +47,9 @@ function printLunarInfo(lunar) {
         '今日节气': lunar.todaySolarTerms,
         '下一节气': `(${lunar.nextSolarTerm}, ${lunar.nextSolarTermDate}, ${lunar.nextSolarTermYear})`,
         '今年节气表': lunar.thisYearSolarTermsDic,
+        '月份类型': lunar.lunarMonthType,
         '季节': lunar.lunarSeason,
+        '季节类型': lunar.lunarSeasonName,
         '今日时辰': lunar.twohour8CharList,
         '时辰凶吉': lunar.get_twohourLuckyList(),
         '生肖冲煞': lunar.chineseZodiacClash,
