@@ -6,11 +6,13 @@ echo "🧪 开始 cnlunar-js 完整验证流程..."
 # 1. 生成 Python 基准数据
 echo "📊 生成 Python 基准数据..."
 cd scripts
-python generate_full_test.py
 
 if [ ! -f "full_test.json" ]; then
-    echo "❌ 基准数据生成失败"
-    exit 1
+    python generate_full_test.py
+    if [ ! -f "full_test.json" ]; then
+        echo "❌ 基准数据生成失败"
+        exit 1
+    fi
 fi
 
 cd ../tests

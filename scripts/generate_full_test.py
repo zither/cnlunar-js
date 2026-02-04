@@ -6,7 +6,7 @@ START_YEAR = 1901
 END_YEAR = 2099
 OUTPUT_FILE = "full_test.json"
 
-def serialize_lunar(lunar_obj, dt):
+def serialize_lunar(lunar_obj, dt, yeargod):
     # (保留你之前完整的 serialize_lunar 代码，不要删减)
     # ...
     # 触发懒加载计算
@@ -14,6 +14,7 @@ def serialize_lunar(lunar_obj, dt):
     
     return {
         "input_date": dt.strftime("%Y-%m-%d %H:%M"),
+        "yeargod": yeargod,
         "lunar": {
             "year": lunar_obj.lunarYear,
             "month": lunar_obj.lunarMonth,
@@ -107,19 +108,37 @@ def generate():
                 for day in range(1, 32):
                     try:
                         # 采样点 1
+                        yeargod = 'noduty'
                         dt = datetime.datetime(year, month, day, 10, 30)
-                        lunar = cnlunar.Lunar(dt, godType='8char')
-                        data = serialize_lunar(lunar, dt)
+                        lunar = cnlunar.Lunar(dt, godType='8char', yeargod=yeargod)
+                        data = serialize_lunar(lunar, dt, yeargod)
+                        # 写入一行 JSON
+                        f.write(json.dumps(data, ensure_ascii=False) + "\n")
+                        count += 1
+
+                        yeargod = 'duty'
+                        dt = datetime.datetime(year, month, day, 10, 30)
+                        lunar = cnlunar.Lunar(dt, godType='8char', yeargod=yeargod)
+                        data = serialize_lunar(lunar, dt, yeargod)
                         # 写入一行 JSON
                         f.write(json.dumps(data, ensure_ascii=False) + "\n")
                         count += 1
                         
                         # 采样点 2
+                        yeargod = 'duty'
                         dt2 = datetime.datetime(year, month, day, 23, 30)
-                        lunar2 = cnlunar.Lunar(dt2, godType='8char')
-                        data2 = serialize_lunar(lunar2, dt2)
+                        lunar2 = cnlunar.Lunar(dt2, godType='8char', yeargod=yeargod)
+                        data2 = serialize_lunar(lunar2, dt2, yeargod)
                         f.write(json.dumps(data2, ensure_ascii=False) + "\n")
                         count += 1
+
+                        yeargod = 'noduty'
+                        dt2 = datetime.datetime(year, month, day, 23, 30)
+                        lunar2 = cnlunar.Lunar(dt2, godType='8char', yeargod=yeargod)
+                        data2 = serialize_lunar(lunar2, dt2, yeargod)
+                        f.write(json.dumps(data2, ensure_ascii=False) + "\n")
+                        count += 1
+
                         
                     except ValueError:
                         continue

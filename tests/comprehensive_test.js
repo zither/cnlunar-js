@@ -87,7 +87,7 @@ class ComprehensiveTester {
         const date = new Date(y, m - 1, d, h, min);
         
         try {
-            const lunar = new Lunar(date, '8char', 'noduty');
+            const lunar = new Lunar(date, '8char', 'year', expected.yeargod);
             // 确保懒加载属性被计算
             lunar.get_AngelDemon(); 
             
